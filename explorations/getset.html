@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>ideal</title>
+		<meta charset="utf-8">
+	</head>
+	<body>
+		<div id="test">
+			<p>{{msg}}</p>
+			<p>{{msg}}</p>
+			<p>{{msg}}</p>
+			<p>{{what}}</p>
+			<p>{{hey}}</p>
+		</div>
+		<script src="../src/debug.js"></script>
+		<script>
+			var bindingMark = 'data-element-binding'
+			function Element (id, initData) {
+
+				var self	 = this,
+					el 		 = self.el = document.getElementById(id)
+					bindings = {} // the internal copy
+					data 	 = self.data = {} // the external interface
+					content  = el.innerHTML.replace(/\{\{(.*)\}\}/g, markToken)
+
+				el.innerHTML = content				
+				for (var variable in bindings) {
+					bind(variable)
+				}
+				log('bindings', bindings)
+
+				if (initData) {
+					log('initData', initData)
+					for (var variable in initData) {
+						// 这里 data 赋值直接就改变了 dom 和数据
+						data[variable] = initData[variable]
+						// data[variable] = 'abc winter '
+					}					
+
+				}
+
+				
+				// {{msg}} => <span data-element-binding="msg"></span>
+				function markToken (match, variable) {					
+					bindings[variable] = {}					
+					return '<span ' + bindingMark + '="' + variable +'"></span>'
+				}
+
+				function bind (variable) {					
+					bindings[variable].els = el.querySelectorAll('[' + bindingMark + '="' + variable + '"]')
+					;[].forEach.call(bindings[variable].els, function(e) {
+						// log('e', e)
+						e.removeAttribute(bindingMark)
+					})
+					// 此处是双向绑定的核心
+					Object.defineProperty(data, variable, {
+						set: function (newVal) {
+						    [].forEach.call(bindings[variable].els, function (e) {
+								// 连接 dom 和数据
+								bindings[variable].value = newVal
+								e.textContent = newVal
+						    })
+						},
+						get: function () {
+						    return bindings[variable].value
+						}
+					})
+				}
+			}
+			
+			var app = new Element('test', {
+				msg: 'hello winter test'
+			})
+
+		</script>
+	</body>
+</html>
