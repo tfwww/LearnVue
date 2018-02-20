@@ -52,4 +52,18 @@ function bind(variable) {
 }
 ```
 
+## commit 3 naive implementation
+
+此次 commit 主要是添加了绑定事件以及对于的数据格式化功能
+
+#### 两个模块
+
+- filter.js
+数据格式化或者过滤
+
+- directives.js
+自定义指令以及事件的绑定
+
+
+
 
