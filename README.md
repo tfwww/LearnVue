@@ -1,69 +1,16 @@
 # LearnVue
 Learn Vue from the commits
 
-## commit 1 
+## commit 1 init
+- 配置 git ignore 文件
 
-## commit 2 rename and core code
+## commit 2 setup unit testing
+- 配置测试框架，主要用的 karma
 
-#### 先从入口看起
-```
-<div id="test">
-    <p>{{msg}}</p>
-    <p>{{msg}}</p>
-    <p>{{msg}}</p>
-    <p>{{what}}</p>
-    <p>{{hey}}</p>
-</div>
-
-var app = new Element('test', {
-    msg: 'hello winter test'
-})
-
-```
-
-1. 元素 id test 标识，在此 dom 节点下做插入动作
-
-2. 解析 dom 结构，通过 {{}} 标记提取变量
-
-    `el.innerHTML.replace(/\{\{(.*)\}\}/g, markToken)`
-
-3. 通过 bind 函数实现 dom 与数据层绑定
-
-``` 
-function bind(variable) {
-    bindings[variable].els = el.querySelectorAll('[' + bindingMark + '="' + variable + '"]')
-    ;[].forEach.call(bindings[variable].els, function(e) {
-        // log('e', e)
-        e.removeAttribute(bindingMark)
-    })
-    // 此处是双向绑定的核心
-    Object.defineProperty(data, variable, {
-        set: function(newVal) {
-            [].forEach.call(bindings[variable].els, function(e) {
-                // 连接 dom 和数据
-                bindings[variable].value = newVal
-                e.textContent = newVal
-            })
-        },
-        get: function() {
-            return bindings[variable].value
-        }
-    })
-}
-```
-
-## commit 3 naive implementation
-
-此次 commit 主要是添加了绑定事件以及对于的数据格式化功能
-
-#### 两个模块
-
-- filter.js
-数据格式化或者过滤
-
-- directives.js
-自定义指令以及事件的绑定
-
-
+## commit 3 scaffolding
+- 配置个功能模块，主要是文件目录的设置
+- 我自己加了一些方便调试的工具
+1. 主要是 [log.js](https://github.com/wmzhong/LearnVue/blob/master/src/log.js)
+2. 配置了 Browsersync 和 browserify 打包工具
 
 
