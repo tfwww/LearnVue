@@ -1,6 +1,6 @@
 var _ = require('./util')
 var Compiler = require('./compiler/compiler')
-
+var debug = require('./debug')
 /**
  * The exposed Vue constructor.
  *

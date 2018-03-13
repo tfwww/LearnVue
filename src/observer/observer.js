@@ -1,75 +1,174 @@
 var _ = require('../util')
 var Emitter = require('../emitter')
+var arrayAugmentations = require('./array-augmentations')
+var objectAugmentations = require('./object-augmentations')
+
+// Type enums
+
+var ARRAY  = 0
+var OBJECT = 1
 
 /**
  * Observer class that are attached to each observed
  * object. They are essentially event emitters, but can
- * connect to each other and relay the events up the nested
- * object chain.
+ * connect to each other like nodes to map the hierarchy
+ * of data objects. Once connected, detected change events
+ * can propagate up the nested object chain.
+ *
+ * The constructor can be invoked without arguments to
+ * create a value-less observer that simply listens to
+ * other observers.
  *
  * @constructor
  * @extends Emitter
- * @private
+ * @param {Array|Object} [value]
+ * @param {Number} [type]
  */
 
-function Observer() {
-    Emitter.call(this)
-    this.connections = Object.create(null)
+function Observer (value, type) {
+  Emitter.call(this)
+  this.value = value
+  this.type = type
+  this.initiated = false
+  this.children = Object.create(null)
+  if (value) {
+    _.define(value, '$observer', this)
+  }
 }
 
 var p = Observer.prototype = Object.create(Emitter.prototype)
 
 /**
- * Observe an object of unkown type.
- *
- * @param {*} obj
- * @return {Boolean} - returns true if successfully observed.
+ * Initialize the observation based on value type.
+ * Should only be called once.
  */
 
-p.observe = function (obj) {
-    if (obj && obj.$observer) {
-        // already observed
-        return
-    }
-    if (_.isArray(obj)) {
-        this.observeArray(obj)
-        return true
-    }
-    if (_.isObject(obj)) {
-        this.observeObject(obj)
-        return true
-    }
+p.init = function () {
+  var value = this.value
+  if (this.type === ARRAY) {
+    _.augment(value, arrayAugmentations)
+    this.link(value)
+  } else if (this.type === OBJECT) {
+    _.augment(value, objectAugmentations)
+    this.walk(value)
+  }
+  this.initiated = true
 }
 
 /**
- * Connect to another Observer instance,
+ * Walk through each property, converting them and adding them as child.
+ * This method should only be called when value type is Object.
+ *
+ * @param {Object} obj
+ */
+
+p.walk = function (obj) {
+  var key, val, ob
+  for (key in obj) {
+    val = obj[key]
+    ob = Observer.create(val)
+    if (ob) {
+      this.add(key, ob)
+      if (ob.initiated) {
+        this.deliver(key, val)
+      } else {
+        ob.init()
+      }
+    } else {
+      this.convert(key, val)
+    }
+  }
+}
+
+/**
+ * Link a list of items to the observer's value Array.
+ * When any of these items emit change event, the Array will be notified.
+ *
+ * @param {Array} items
+ */
+
+p.link = function (items) {
+  
+}
+
+/**
+ * Unlink the items from the observer's value Array.
+ *
+ * @param {Array} items
+ */
+
+p.unlink = function (items) {
+  
+}
+
+/**
+ * Convert a tip value into getter/setter so we can emit the events
+ * when the property is accessed/changed.
+ *
+ * @param {String} key
+ * @param {*} val
+ */
+
+p.convert = function (key, val) {
+  
+}
+
+/**
+ * Walk through an already observed object and emit its tip values.
+ * This is necessary because newly observed objects emit their values
+ * during init; for already observed ones we can skip the initialization,
+ * but still need to emit the values.
+ *
+ * @param {String} key
+ * @param {*} val
+ */
+
+p.deliver = function (key, val) {
+  
+}
+
+/**
+ * Add a child observer for a property key,
  * capture its get/set/mutate events and relay the events
  * while prepending a key segment to the path.
  *
- * @param {Observer} target
  * @param {String} key
+ * @param {Observer} ob
  */
 
-p.connect = function (target, key) {
+p.add = function (key, ob) {
 
 }
 
 /**
- * Disconnect from a connected target Observer.
+ * Remove a child observer.
  *
- * @param {Observer} target
  * @param {String} key
+ * @param {Observer} ob
  */
 
-p.disconnect = function (target, key) {
-
+p.remove = function (key, ob) {
+  
 }
 
 /**
- * Mixin Array and Object observe methods
+ * Attempt to create an observer instance for a value,
+ * returns the new observer if successfully observed,
+ * or the existing observer if the value already has one.
+ *
+ * @param {*} value
+ * @return {Observer}
+ * @static
  */
 
-_.mixin(p, require('./array'))
-_.mixin(p, require('./object'))
+Observer.create = function (value) {
+  if (value && value.$observer) {
+    return value.$observer
+  } if (_.isArray(value)) {
+    return new Observer(value, ARRAY)
+  } else if (_.isObject(value)) {
+    return new Observer(value, OBJECT)
+  }
+}
 
 module.exports = Observer
