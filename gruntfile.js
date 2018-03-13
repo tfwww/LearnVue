@@ -24,10 +24,38 @@ module.exports = function (grunt) {
 					}
 				}
 			}
-		}
-	})
+        },
+        watch: {
+            browserify: {
+                files: ['src/**/*.js'],
+                tasks: ['browserify']
+            }
+        },
+        browserify: {
+            dev: {
+                src: ['src/**/*.js'],
+                dest: 'dist/bundle.js',                
+            }
+        },
+        // 实时刷新服务器
+        browserSync: {
+            bsFiles: {
+                src: ['dist/bundle.js', 'dist/*.html']
+            },
+            options: {
+                watchTask: true,
+                server: {
+                    baseDir: "./"
+                }
+            }
+        }
+    })
+    
+    grunt.loadNpmTasks('grunt-contrib-watch')
+    grunt.loadNpmTasks('grunt-browserify')
+    grunt.loadNpmTasks('grunt-karma')
+    grunt.loadNpmTasks('grunt-browser-sync')
 
-	grunt.loadNpmTasks('grunt-karma')
 	grunt.registerTask('default', ['karma'])
-
+	grunt.registerTask('build', ['browserSync', 'watch'])
 }
