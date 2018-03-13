@@ -31,5 +31,30 @@ Learn Vue from the commits
 
 ## commit 9 observer object
 - 完善观察者功能
+```
+p.convert = function (key, val) {
+    var prefix = key.charAt(0)
+    if (prefix === '$' || prefix === '_') {
+        return
+    }
+    var ob = this
+    Object.defineProperty(this.value, key, {
+        enumerable: true,
+        configurable: true,
+        get: function () {
+            ob.emit('get', key)
+            return val
+        },
+        set: function (newVal) {
+            if (newVal === val) return
+            ob.unobserve(key, val)
+            ob.observe(key, newVal)
+            val = newVal
+        }
+    })
+}
+```
+在 Observer 对象里，当对象属性值有变动时候，通过 emit 自定义事件通知
+
 
 

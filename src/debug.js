@@ -5,15 +5,14 @@ var Observer = require('./observer/observer')
 
 var obj = {test: 'old'}
 var ob = new Observer(obj)
-// ob.init()
-// ob.on('set', setLog)
+ob.init()
+ob.on('set', setLog)
 
-// obj.test = 'new'
-// function setLog() {
-//     log('set')
-// }
-
-// log('ob', ob)
+obj.test = 'new'
+function setLog() {
+    log('set')
+}
+log('ob', ob)
 
 
 
