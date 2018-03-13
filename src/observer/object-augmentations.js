@@ -25,8 +25,7 @@ _.define(objectAgumentations, '$add', function (key, val) {
  * @public
  */
 
-_.define(objectAgumentations, '$delete', function (key) {
-    log('this', this)
+_.define(objectAgumentations, '$delete', function (key) {    
     if (!this.hasOwnProperty(key)) return
     // trigger set events
     this[key] = undefined

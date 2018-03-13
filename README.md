@@ -25,8 +25,11 @@ Learn Vue from the commits
 ## commit 7 _.define
 - 在 [util.js](https://github.com/wmzhong/LearnVue/blob/master/src/util.js) 添加方法，定义一个不可迭代，只读的对象属性
 
-## commit 7 working on observer
+## commit 8 working on observer
 - 添加了观察者
 - 重新封装定义对象和数组
+
+## commit 9 observer object
+- 完善观察者功能
 
 

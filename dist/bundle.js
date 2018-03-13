@@ -20,10 +20,17 @@ var objectAgu = require('./observer/object-augmentations')
 var arrayAgu = require('./observer/array-augmentations')
 var Observer = require('./observer/observer')
 
-var obj = {}
-var ob = Observer.create(obj)
+var obj = {test: 'old'}
+var ob = new Observer(obj)
 ob.init()
-obj.test = 'value'
+ob.on('set', setLog)
+
+obj.test = 'new'
+function setLog() {
+    log('set')
+}
+
+log('ob', ob)
 
 
 
@@ -359,7 +366,7 @@ var objectAugmentations = require('./object-augmentations')
 
 // Type enums
 
-var ARRAY  = 0
+var ARRAY = 0
 var OBJECT = 1
 
 /**
@@ -379,15 +386,15 @@ var OBJECT = 1
  * @param {Number} [type]
  */
 
-function Observer (value, type) {
-  Emitter.call(this)
-  this.value = value
-  this.type = type
-  this.initiated = false
-  this.children = Object.create(null)
-  if (value) {
-    _.define(value, '$observer', this)
-  }
+function Observer(value, type) {
+    Emitter.call(this)
+    this.value = value
+    this.type = type
+    this.initiated = false
+    this.children = Object.create(null)
+    if (value) {
+        _.define(value, '$observer', this)
+    }
 }
 
 var p = Observer.prototype = Object.create(Emitter.prototype)
@@ -398,15 +405,15 @@ var p = Observer.prototype = Object.create(Emitter.prototype)
  */
 
 p.init = function () {
-  var value = this.value
-  if (this.type === ARRAY) {
-    _.augment(value, arrayAugmentations)
-    this.link(value)
-  } else if (this.type === OBJECT) {
-    _.augment(value, objectAugmentations)
-    this.walk(value)
-  }
-  this.initiated = true
+    var value = this.value
+    if (this.type === ARRAY) {
+        _.augment(value, arrayAugmentations)
+        this.link(value)
+    } else if (this.type === OBJECT) {
+        _.augment(value, objectAugmentations)
+        this.walk(value)
+    }
+    this.initiated = true
 }
 
 /**
@@ -417,21 +424,21 @@ p.init = function () {
  */
 
 p.walk = function (obj) {
-  var key, val, ob
-  for (key in obj) {
-    val = obj[key]
-    ob = Observer.create(val)
-    if (ob) {
-      this.add(key, ob)
-      if (ob.initiated) {
-        this.deliver(key, val)
-      } else {
-        ob.init()
-      }
-    } else {
-      this.convert(key, val)
+    var key, val, ob
+    for (key in obj) {
+        val = obj[key]
+        ob = Observer.create(val)
+        if (ob) {
+            this.add(key, ob)
+            if (ob.initiated) {
+                this.deliver(key, val)
+            } else {
+                ob.init()
+            }
+        } else {
+            this.convert(key, val)
+        }
     }
-  }
 }
 
 /**
@@ -442,7 +449,7 @@ p.walk = function (obj) {
  */
 
 p.link = function (items) {
-  
+
 }
 
 /**
@@ -452,7 +459,7 @@ p.link = function (items) {
  */
 
 p.unlink = function (items) {
-  
+
 }
 
 /**
@@ -464,7 +471,7 @@ p.unlink = function (items) {
  */
 
 p.convert = function (key, val) {
-  
+
 }
 
 /**
@@ -478,7 +485,7 @@ p.convert = function (key, val) {
  */
 
 p.deliver = function (key, val) {
-  
+
 }
 
 /**
@@ -502,7 +509,7 @@ p.add = function (key, ob) {
  */
 
 p.remove = function (key, ob) {
-  
+
 }
 
 /**
@@ -516,13 +523,13 @@ p.remove = function (key, ob) {
  */
 
 Observer.create = function (value) {
-  if (value && value.$observer) {
-    return value.$observer
-  } if (_.isArray(value)) {
-    return new Observer(value, ARRAY)
-  } else if (_.isObject(value)) {
-    return new Observer(value, OBJECT)
-  }
+    if (value && value.$observer) {
+        return value.$observer
+    } if (_.isArray(value)) {
+        return new Observer(value, ARRAY)
+    } else if (_.isObject(value)) {
+        return new Observer(value, OBJECT)
+    }
 }
 
 module.exports = Observer
