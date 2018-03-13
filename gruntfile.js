@@ -1,6 +1,21 @@
 module.exports = function (grunt) {
 
 	grunt.initConfig({
+        jshint: {
+            options: {
+                reporter: require('jshint-stylish'),
+                jshintrc: true
+            },
+            build: {
+                src: ['gruntfile.js', 'tasks/*.js']
+            },
+            src: {
+                src: 'src/**/*.js'
+            },
+            test: {
+                src: 'test/*/specs/*.js'
+            }
+        },
 		karma: {
 			unit: {
 				options: {
@@ -51,11 +66,12 @@ module.exports = function (grunt) {
         }
     })
     
+    grunt.loadNpmTasks('grunt-contrib-jshint')
     grunt.loadNpmTasks('grunt-contrib-watch')
     grunt.loadNpmTasks('grunt-browserify')
     grunt.loadNpmTasks('grunt-karma')
     grunt.loadNpmTasks('grunt-browser-sync')
 
 	grunt.registerTask('default', ['karma'])
-	grunt.registerTask('build', ['browserSync', 'watch'])
+    grunt.registerTask('build', ['browserSync', 'watch'])    
 }

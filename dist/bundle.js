@@ -15,19 +15,19 @@ function Compiler() {
 
 module.exports = Compiler
 },{}],7:[function(require,module,exports){
-exports.$get = function(path) {
+exports.$get = function() {
     
 }
 
-exports.$set = function(path, val) {
+exports.$set = function() {
     
 }
 
-exports.$watch = function(key, cb) {
+exports.$watch = function() {
     
 }
 
-exports.$unwatch = function(id) {
+exports.$unwatch = function() {
     
 }
 },{}],8:[function(require,module,exports){
@@ -65,7 +65,7 @@ exports.$dispatch = function() {
     
 }
 },{}],10:[function(require,module,exports){
-exports.$mount = function(el) {
+exports.$mount = function() {
     
 }
 
