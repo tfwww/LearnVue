@@ -13,4 +13,5 @@ Learn Vue from the commits
 1. 主要是 [log.js](https://github.com/wmzhong/LearnVue/blob/master/src/log.js)
 2. 配置了 Browsersync 和 browserify 打包工具
 
-
+## commit 4 setup build
+- 设置 jshint
