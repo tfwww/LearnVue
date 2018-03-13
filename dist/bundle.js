@@ -73,45 +73,77 @@ exports.$destroy = function() {
     
 }
 },{}],11:[function(require,module,exports){
-// common utils
+/**
+ * Mix properties into target object.
+ *
+ * @param {Object} target
+ * @param {Object} mixin
+ */
 
-exports.mixin = function(target, mixin) {    
+exports.mixin = function (target, mixin) {
     for (var key in mixin) {
         if (target[key] !== mixin[key]) {
             target[key] = mixin[key]
         }
-    }    
+    }
 }
-},{}],12:[function(require,module,exports){
-var _        = require('./util'),
-Compiler = require('./compiler/compiler')
 
 /**
-*  The exposed Vue constructor.
-*/
-function Vue (options) {
+ * Object type check. Only returns true
+ * for plain JavaScript objects.
+ *
+ * @param {*} obj
+ * @return {Boolean}
+ */
+
+exports.isObject = function (obj) {
+    return Object.prototype.toString.call(obj) === '[object Object]'
+}
+
+/**
+ * Array type check.
+ *
+ * @param {*} obj
+ * @return {Boolean}
+ */
+
+exports.isArray = function (obj) {
+    return Array.isArray(obj)
+}
+},{}],12:[function(require,module,exports){
+var _ = require('./util')
+var Compiler = require('./compiler/compiler')
+
+/**
+ * The exposed Vue constructor.
+ *
+ * @constructor
+ * @public
+ */
+
+function Vue(options) {
     this._compiler = new Compiler(this, options)
 }
 
 // mixin instance methods
+
 var p = Vue.prototype
-// 添加实体方法
 _.mixin(p, require('./instance/lifecycle'))
 _.mixin(p, require('./instance/data'))
 _.mixin(p, require('./instance/dom'))
 _.mixin(p, require('./instance/events'))
 
-
-
 // mixin asset registers
+
 _.mixin(Vue, require('./api/asset-register'))
 
 // static methods
-Vue.config    = require('./api/config')
-Vue.use       = require('./api/use')
-Vue.require   = require('./api/require')
-Vue.extend    = require('./api/extend')
-Vue.nextTick  = require('./util').nextTick
+
+Vue.config = require('./api/config')
+Vue.use = require('./api/use')
+Vue.require = require('./api/require')
+Vue.extend = require('./api/extend')
+Vue.nextTick = require('./util').nextTick
 
 module.exports = Vue
 },{"./api/asset-register":1,"./api/config":2,"./api/extend":3,"./api/require":4,"./api/use":5,"./compiler/compiler":6,"./instance/data":7,"./instance/dom":8,"./instance/events":9,"./instance/lifecycle":10,"./util":11}]},{},[12]);

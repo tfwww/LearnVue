@@ -72,6 +72,11 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-karma')
     grunt.loadNpmTasks('grunt-browser-sync')
 
+    // load custom tasks
+    grunt.file.recurse('tasks', function (path) {
+        require('./' + path)(grunt)
+    })
+    
 	grunt.registerTask('default', ['karma'])
     grunt.registerTask('build', ['browserSync', 'watch'])    
 }

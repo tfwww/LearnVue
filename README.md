@@ -15,3 +15,6 @@ Learn Vue from the commits
 
 ## commit 4 setup build
 - 设置 jshint
+
+## commit 5 more files
+- 添加说明文档等
