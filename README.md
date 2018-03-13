@@ -18,3 +18,6 @@ Learn Vue from the commits
 
 ## commit 5 more files
 - 添加说明文档等
+
+## commit 6 working on new observer
+- 添加观察者
