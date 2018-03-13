@@ -32,8 +32,8 @@ module.exports = function (grunt) {
             }
         },
         browserify: {
-            dev: {
-                src: ['src/**/*.js'],
+            dev: {                
+                src: ['src/vue.js'],
                 dest: 'dist/bundle.js',                
             }
         },

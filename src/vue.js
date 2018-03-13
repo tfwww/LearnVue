@@ -10,7 +10,7 @@ function Vue (options) {
 
 // mixin instance methods
 var p = Vue.prototype
-log('vue p', p)
+// 添加实体方法
 _.mixin(p, require('./instance/lifecycle'))
 _.mixin(p, require('./instance/data'))
 _.mixin(p, require('./instance/dom'))

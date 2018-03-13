@@ -9,30 +9,12 @@ arguments[4][1][0].apply(exports,arguments)
 },{"dup":1}],5:[function(require,module,exports){
 arguments[4][1][0].apply(exports,arguments)
 },{"dup":1}],6:[function(require,module,exports){
-arguments[4][1][0].apply(exports,arguments)
-},{"dup":1}],7:[function(require,module,exports){
-function Binding() {
-    
-}
-
-module.exports = Binding
-},{}],8:[function(require,module,exports){
 function Compiler() {
     
 }
 
 module.exports = Compiler
-},{}],9:[function(require,module,exports){
-module.exports = {}
-},{}],10:[function(require,module,exports){
-function Directive() {
-    
-}
-
-module.exports = Directive
-},{}],11:[function(require,module,exports){
-arguments[4][1][0].apply(exports,arguments)
-},{"dup":1}],12:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 exports.$get = function(path) {
     
 }
@@ -48,7 +30,7 @@ exports.$watch = function(key, cb) {
 exports.$unwatch = function(id) {
     
 }
-},{}],13:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 exports.$appendTo = function() {
     
 }
@@ -68,7 +50,7 @@ exports.$after = function() {
 exports.$remove = function() {
     
 }
-},{}],14:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 ;['emit', 'on', 'off', 'once'].forEach(function(method) {
     exports[method] = function() {
         
@@ -82,7 +64,7 @@ exports.$broadcast = function() {
 exports.$dispatch = function() {
     
 }
-},{}],15:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 exports.$mount = function(el) {
     
 }
@@ -90,44 +72,17 @@ exports.$mount = function(el) {
 exports.$destroy = function() {
     
 }
-},{}],16:[function(require,module,exports){
-var debug = true
-var log = debug ? console.log.bind(console) : function() {}
-},{}],17:[function(require,module,exports){
-arguments[4][1][0].apply(exports,arguments)
-},{"dup":1}],18:[function(require,module,exports){
-arguments[4][1][0].apply(exports,arguments)
-},{"dup":1}],19:[function(require,module,exports){
-arguments[4][1][0].apply(exports,arguments)
-},{"dup":1}],20:[function(require,module,exports){
-arguments[4][1][0].apply(exports,arguments)
-},{"dup":1}],21:[function(require,module,exports){
-arguments[4][1][0].apply(exports,arguments)
-},{"dup":1}],22:[function(require,module,exports){
-arguments[4][1][0].apply(exports,arguments)
-},{"dup":1}],23:[function(require,module,exports){
-arguments[4][1][0].apply(exports,arguments)
-},{"dup":1}],24:[function(require,module,exports){
-arguments[4][1][0].apply(exports,arguments)
-},{"dup":1}],25:[function(require,module,exports){
-module.exports = 123
-},{}],26:[function(require,module,exports){
-arguments[4][1][0].apply(exports,arguments)
-},{"dup":1}],27:[function(require,module,exports){
-arguments[4][1][0].apply(exports,arguments)
-},{"dup":1}],28:[function(require,module,exports){
-arguments[4][1][0].apply(exports,arguments)
-},{"dup":1}],29:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 // common utils
 
-exports.mixin = function(target, mixin) {
+exports.mixin = function(target, mixin) {    
     for (var key in mixin) {
         if (target[key] !== mixin[key]) {
             target[key] = mixin[key]
         }
-    }
+    }    
 }
-},{}],30:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var _        = require('./util'),
 Compiler = require('./compiler/compiler')
 
@@ -140,7 +95,7 @@ function Vue (options) {
 
 // mixin instance methods
 var p = Vue.prototype
-log('vue p', p)
+// 添加实体方法
 _.mixin(p, require('./instance/lifecycle'))
 _.mixin(p, require('./instance/data'))
 _.mixin(p, require('./instance/dom'))
@@ -159,4 +114,4 @@ Vue.extend    = require('./api/extend')
 Vue.nextTick  = require('./util').nextTick
 
 module.exports = Vue
-},{"./api/asset-register":1,"./api/config":2,"./api/extend":3,"./api/require":4,"./api/use":5,"./compiler/compiler":8,"./instance/data":12,"./instance/dom":13,"./instance/events":14,"./instance/lifecycle":15,"./util":29}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30]);
+},{"./api/asset-register":1,"./api/config":2,"./api/extend":3,"./api/require":4,"./api/use":5,"./compiler/compiler":6,"./instance/data":7,"./instance/dom":8,"./instance/events":9,"./instance/lifecycle":10,"./util":11}]},{},[12]);
