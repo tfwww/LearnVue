@@ -65,7 +65,7 @@ p.off = function (event, fn) {
     this._cbs = this._cbs || {}
 
     // all
-    // 解绑所有事件
+    // 所有事件
     if (!arguments.length) {
         this._cbs = {}
         return this
