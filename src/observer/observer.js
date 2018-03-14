@@ -53,7 +53,14 @@ var p = Observer.prototype = Object.create(Emitter.prototype)
  * which is much less likely to appear in property keys.
  */
 
-var delimiter = Observer.pathDelimiter = '\b'
+Observer.pathDelimiter = '\b'
+
+/**
+ * Switch to globally control whether to emit get events.
+ * Only enabled during dependency collections.
+ */
+
+Observer.emitGet = false
 
 /**
  * Attempt to create an observer instance for a value,
@@ -85,10 +92,11 @@ Observer.create = function (value) {
 p.walk = function (obj) {
     var key, val
     for (key in obj) {
-        if (!obj.hasOwnProperty(key)) return
-        val = obj[key]
-        this.observe(key, val)
-        this.convert(key, val)
+        if (obj.hasOwnProperty(key)) {
+            val = obj[key]
+            this.observe(key, val)
+            this.convert(key, val)
+        }
     }
 }
 
@@ -98,9 +106,10 @@ p.walk = function (obj) {
  * @param {Array} items
  */
 
-p.link = function (items) {
+p.link = function (items, index) {
+    index = index || 0
     for (var i = 0, l = items.length; i < l; i++) {
-        this.observe(i, items[i])
+        this.observe(i + index, items[i])
     }
 }
 
@@ -112,15 +121,14 @@ p.link = function (items) {
 
 p.unlink = function (items) {
     for (var i = 0, l = items.length; i < l; i++) {
-        this.unobserve(items[i], i)
+        this.unobserve(items[i])
     }
 }
 
 /**
  * If a property is observable,
- * create an Observer for it and add it as a child.
- * This method is called only on properties observed
- * for the first time.
+ * create an Observer for it, and register self as
+ * one of its parents with the associated property key.
  *
  * @param {String} key
  * @param {*} val
@@ -130,6 +138,7 @@ p.observe = function (key, val) {
     var ob = Observer.create(val)
     if (ob) {
         // register self as a parent of the child observer.
+        if (ob.findParent(this) > -1) return
         (ob.parents || (ob.parents = [])).push({
             ob: this,
             key: key
@@ -138,30 +147,20 @@ p.observe = function (key, val) {
 }
 
 /**
- * Unobserve a property.
- * If it has an observer, remove it from children.
+ * Unobserve a property, removing self from
+ * its observer's parent list.
  *
  * @param {*} val
  */
 
 p.unobserve = function (val) {
     if (val && val.$observer) {
-        var parents = val.$observer.parents
-        var i = parents.length
-        while (i--) {
-            if (parents[i].ob === this) {
-                parents.splice(i, 1)
-                break
-            }
-        }
-        if (!parents.length) {
-            val.$observer.parents = null
-        }
+        val.$observer.findParent(this, true)
     }
 }
 
 /**
- * Convert a tip value into getter/setter so we can emit
+ * Convert a property into getter/setter so we can emit
  * the events when the property is accessed/changed.
  * Properties prefixed with `$` or `_` are ignored.
  *
@@ -179,7 +178,9 @@ p.convert = function (key, val) {
         enumerable: true,
         configurable: true,
         get: function () {
-            ob.notify('get', key)
+            if (Observer.emitGet) {
+                ob.notify('get', key)
+            }
             return val
         },
         set: function (newVal) {
@@ -188,7 +189,9 @@ p.convert = function (key, val) {
             ob.observe(key, newVal)
             ob.notify('set', key, newVal)
             if (_.isArray(newVal)) {
-                ob.notify('set', key + delimiter + 'length', newVal.length)
+                ob.notify('set',
+                    key + Observer.pathDelimiter + 'length',
+                    newVal.length)
             }
             val = newVal
         }
@@ -212,10 +215,55 @@ p.notify = function (event, path, val, mutation) {
         var ob = parent.ob
         var key = parent.key
         var parentPath = path
-            ? key + delimiter + path
+            ? key + Observer.pathDelimiter + path
             : key
         ob.notify(event, parentPath, val, mutation)
     }
+}
+
+/**
+ * Update child elements' parent key,
+ * should only be called when value type is Array.
+ */
+
+p.updateIndices = function () {
+    var arr = this.value
+    var i = arr.length
+    var ob
+    while (i--) {
+        ob = arr[i] && arr[i].$observer
+        if (ob) {
+            var j = ob.findParent(this)
+            ob.parents[j].key = i
+        }
+    }
+}
+
+/**
+ * Find a parent option object
+ *
+ * @param {Observer} parent
+ * @param {Boolean} [remove] - whether to remove the parent
+ * @return {Number} - index of parent
+ */
+
+p.findParent = function (parent, remove) {
+    var parents = this.parents
+    if (!parents) return -1
+    var i = parents.length
+    while (i--) {
+        var p = parents[i]
+        if (p.ob === parent) {
+            if (remove) {
+                parents.splice(i, 1)
+                if (!parents.length) {
+                    this.parents = null
+                }
+            }
+            return i
+        }
+    }
+    return -1
 }
 
 module.exports = Observer
