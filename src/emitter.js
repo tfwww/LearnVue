@@ -20,12 +20,9 @@ var p = Emitter.prototype
  */
 
 p.on = function (event, fn) {
-    this._cbs = this._cbs || {}
-        ;(this._cbs[event] = this._cbs[event] || [])
+    this._cbs = this._cbs || {}    
+        ; (this._cbs[event] || (this._cbs[event] = []))
             .push(fn)
-    // 等价于以下两行
-    // this._cbs[event] = this._cbs[event] || []
-    // this._cbs[event].push(fn)
     return this
 }
 
@@ -65,7 +62,6 @@ p.off = function (event, fn) {
     this._cbs = this._cbs || {}
 
     // all
-    // 所有事件
     if (!arguments.length) {
         this._cbs = {}
         return this
