@@ -14,5 +14,3 @@ function setLog() {
 }
 log('ob', ob)
 
-
-

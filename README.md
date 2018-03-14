@@ -57,4 +57,5 @@ p.convert = function (key, val) {
 在 Observer 对象里，当对象属性值有变动时候，通过 emit 自定义事件通知
 在观察者模式中，有两种数据结构的处理方式，一种是针对对象，另一种是针对数组
 
-
+## commit 10 use \\b as delimiter
+- 退格作为分隔符

@@ -32,8 +32,6 @@ function setLog() {
 log('ob', ob)
 
 
-
-
 },{"./observer/array-augmentations":13,"./observer/object-augmentations":14,"./observer/observer":15,"./util":16}],8:[function(require,module,exports){
 /**
  * Simple event emitter based on component/emitter.
@@ -256,7 +254,6 @@ var arrayAugmentations = Object.create(Array.prototype)
             // cache original method
             var original = Array.prototype[method]
             // define wrapped method
-            // 格式化
             _.define(arrayAugmentations, method, function () {
                 var args = slice.call(arguments)
                 var result = original.apply(this, args)
@@ -280,8 +277,8 @@ var arrayAugmentations = Object.create(Array.prototype)
 
                 ob.link(inserted)
                 ob.unlink(removed)
-                // empty key, value is self
-                ob.emit('mutate', '', this, {
+                // empty path, value is the Array itself
+                ob.emit('mutate', [], this, {
                     method: method,
                     args: args,
                     result: result,
@@ -362,17 +359,18 @@ var Emitter = require('../emitter')
 var arrayAugmentations = require('./array-augmentations')
 var objectAugmentations = require('./object-augmentations')
 
-// Type enums
+/**
+ * Type enums
+ */
 
 var ARRAY = 0
 var OBJECT = 1
 
 /**
  * Observer class that are attached to each observed
- * object. They are essentially event emitters, but can
- * connect to each other like nodes to map the hierarchy
- * of data objects. Once connected, detected change events
- * can propagate up the nested object chain.
+ * object. Observers can connect to each other like nodes
+ * to map the hierarchy of data objects. Once connected,
+ * detected change events can propagate up the nested chain.
  *
  * The constructor can be invoked without arguments to
  * create a value-less observer that simply listens to
@@ -396,6 +394,34 @@ function Observer(value, type) {
 }
 
 var p = Observer.prototype = Object.create(Emitter.prototype)
+
+/**
+ * Instead of the dot, we use the backspace character
+ * which is much less likely to appear as property keys
+ * in JavaScript.
+ */
+
+var delimiter = Observer.pathDelimiter = '\b'
+
+/**
+ * Attempt to create an observer instance for a value,
+ * returns the new observer if successfully observed,
+ * or the existing observer if the value already has one.
+ *
+ * @param {*} value
+ * @return {Observer|undefined}
+ * @static
+ */
+
+Observer.create = function (value) {
+    if (value && value.$observer) {
+        return value.$observer
+    } if (_.isArray(value)) {
+        return new Observer(value, ARRAY)
+    } else if (_.isObject(value)) {
+        return new Observer(value, OBJECT)
+    }
+}
 
 /**
  * Initialize the observation based on value type.
@@ -453,7 +479,7 @@ p.observe = function (key, val) {
     // emit an initial set event
     this.emit('set', key, val)
     if (_.isArray(val)) {
-        this.emit('set', key + '.length', val.length)
+        this.emit('set', key + delimiter + 'length', val.length)
     }
 }
 
@@ -549,7 +575,7 @@ p.deliver = function (key, val) {
 
 p.add = function (key, ob) {
     var self = this
-    var base = key + '.'
+    var base = key + delimiter
     var adaptors = this.adaptors[key] = {}
 
     adaptors.get = function (path) {
@@ -570,7 +596,7 @@ p.add = function (key, ob) {
             : key
         self.emit('mutate', path, val, mutation)
         // also emit for length
-        self.emit('set', path + '.length', val.length)
+        self.emit('set', path + delimiter + 'length', val.length)
     }
 
     ob.on('get', adaptors.get)
@@ -591,26 +617,6 @@ p.remove = function (key, ob) {
     ob.off('get', adaptors.get)
         .off('set', adaptors.set)
         .off('mutate', adaptors.mutate)
-}
-
-/**
- * Attempt to create an observer instance for a value,
- * returns the new observer if successfully observed,
- * or the existing observer if the value already has one.
- *
- * @param {*} value
- * @return {Observer|undefined}
- * @static
- */
-
-Observer.create = function (value) {
-    if (value && value.$observer) {
-        return value.$observer
-    } if (_.isArray(value)) {
-        return new Observer(value, ARRAY)
-    } else if (_.isObject(value)) {
-        return new Observer(value, OBJECT)
-    }
 }
 
 module.exports = Observer
@@ -692,21 +698,25 @@ if ('__proto__' in {}) {
     }
 }
 },{}],17:[function(require,module,exports){
-var _ = require('./util')
+var _        = require('./util')
 var Compiler = require('./compiler/compiler')
 var debug = require('./debug')
+
 /**
  * The exposed Vue constructor.
  *
  * @constructor
+ * @param {Object} [options]
  * @public
  */
 
-function Vue(options) {
-    this._compiler = new Compiler(this, options)
+function Vue (options) {
+  this._compiler = new Compiler(this, options)
 }
 
-// mixin instance methods
+/**
+ * Mixin instance methods
+ */
 
 var p = Vue.prototype
 _.mixin(p, require('./instance/lifecycle'))
@@ -714,16 +724,20 @@ _.mixin(p, require('./instance/data'))
 _.mixin(p, require('./instance/dom'))
 _.mixin(p, require('./instance/events'))
 
-// mixin asset registers
+/**
+ * Mixin asset registers
+ */
 
 _.mixin(Vue, require('./api/asset-register'))
 
-// static methods
+/**
+ * Static methods
+ */
 
-Vue.config = require('./api/config')
-Vue.use = require('./api/use')
-Vue.require = require('./api/require')
-Vue.extend = require('./api/extend')
+Vue.config   = require('./api/config')
+Vue.use      = require('./api/use')
+Vue.require  = require('./api/require')
+Vue.extend   = require('./api/extend')
 Vue.nextTick = require('./util').nextTick
 
 module.exports = Vue
