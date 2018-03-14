@@ -40,9 +40,11 @@ function Observer(value, type) {
 var p = Observer.prototype = Object.create(Emitter.prototype)
 
 /**
+ * Simply concatenating the path segments with `.` cannot
+ * deal with keys that happen to contain the dot.
+ *
  * Instead of the dot, we use the backspace character
- * which is much less likely to appear as property keys
- * in JavaScript.
+ * which is much less likely to appear in property keys.
  */
 
 var delimiter = Observer.pathDelimiter = '\b'
@@ -94,6 +96,7 @@ p.init = function () {
 p.walk = function (obj) {
     var key, val
     for (key in obj) {
+        if (!obj.hasOwnProperty(key)) return
         val = obj[key]
         this.observe(key, val)
         this.convert(key, val)
@@ -200,8 +203,10 @@ p.unlink = function (items) {
  * during init; for already observed ones we can skip the initialization,
  * but still need to emit the values.
  *
- * @param {String} key
- * @param {*} val
+ * If called with no arguments, it delivers set events for the root value.
+ *
+ * @param {String} [key]
+ * @param {*} [val]
  */
 
 p.deliver = function (key, val) {
