@@ -1,8 +1,35 @@
-var Vue = require('../src/main.js')
+var Seed = require('../src/main.js')
 var expect = require('chai').expect
 
-describe('Element', function () {
-    it('should have a variable', function () {        
-        expect(Vue).to.be.equal(123);        
-    })
+// describe('Element', function () {
+//     it('should have a variable', function () {        
+//         expect(Seed).to.be.equal(123);        
+//     })
+// })
+
+// var app = Seed.create({
+//     id: 'test',
+//     // template
+//     scope: {
+//         msg: 'hellowinter',
+//         hello: 'WHWHWHW',
+//         changeMessage: function () {
+//             app.scope.msg = 'hola'
+//         }
+//     }
+// })
+
+var app = Seed.create({
+    id: 'test',
+    // template
+    scope: {
+        'msg.wow': 'wow',
+        hello: 'hello',
+        changeMessage: function () {
+            app.scope['msg.wow'] = 'hola'
+        },
+        remove: function () {
+            app.destroy()
+        }
+    }
 })

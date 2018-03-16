@@ -7,9 +7,24 @@
     <link rel="stylesheet" href="mocha.css" />
   </head>
   <body>
-    <div id="mocha"></div>    
+    <div id="mocha"></div>
+    <!-- <div id="test" sd-on-click="changeMessage | .button">
+        <p sd-text="msg | capitalize"></p>
+        <p sd-show="something">YOYOYO</p>
+        <p class="button" sd-text="msg"></p>
+        <p sd-class-red="error" sd-text="hello"></p>
+    </div> -->
+    <div id="test" sd-on-click="changeMessage | .button">
+        <p sd-text="msg.wow | capitalize" sd-on-click="remove"></p>
+        <p sd-text="msg.wow" class="button"></p>
+        <p sd-class-red="error" sd-text="hello"></p>
+        <div sd-repeat="todos">
+            <span sd-text="text"></span>
+        </div>
+    </div>
     <script src="mocha.js"></script>
     <script>mocha.setup('bdd');</script>
+    <script src="log.js"></script>
     <script src="bundle.js"></script>
     <script>
       mocha.run();
