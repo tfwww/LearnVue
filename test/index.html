@@ -8,19 +8,14 @@
   </head>
   <body>
     <div id="mocha"></div>
-    <!-- <div id="test" sd-on-click="changeMessage | .button">
-        <p sd-text="msg | capitalize"></p>
-        <p sd-show="something">YOYOYO</p>
-        <p class="button" sd-text="msg"></p>
-        <p sd-class-red="error" sd-text="hello"></p>
-    </div> -->
     <div id="test" sd-on-click="changeMessage | delegate .button">
         <p sd-text="msg.wow | capitalize" sd-on-click="remove"></p>
         <p sd-text="msg.wow | uppercase" class="button"></p>
+        <p sd-text="total | money"></p>
         <p sd-class-red="error" sd-text="hello"></p>
-        <div sd-each="todos">
-            <span sd-text="text"></span>
-        </div>
+        <ul sd-show="todos">
+            <li sd-each-todo="todos" sd-text="todo.text"></li>
+        </ul>
     </div>
     <script src="mocha.js"></script>
     <script>mocha.setup('bdd');</script>

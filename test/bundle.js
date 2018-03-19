@@ -10724,7 +10724,13 @@ return typeDetect;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],39:[function(require,module,exports){
-var Directives = require('./directives'),
+module.exports = {
+    prefix: 'sd',
+    selector: null
+}
+},{}],40:[function(require,module,exports){
+var config = require('./config'),
+    Directives = require('./directives'),
     Filters = require('./filters')
 
 var KEY_RE = /^[^\|]+/,
@@ -10754,6 +10760,7 @@ function Directive(def, attr, arg, key) {
             // TODO test performance against regex
             var tokens = filter.replace('|', '').trim().split(/\s+/)
             return {
+                name: tokens[0],
                 apply: Filters[tokens[0]],
                 args: tokens.length > 1 ? tokens.slice(1) : null
             }
@@ -10772,6 +10779,7 @@ Directive.prototype.update = function (value) {
 Directive.prototype.applyFilters = function (value) {
     var filtered = value
     this.filters.forEach(function (filter) {
+        if (!filter.apply) throw new Error('Unknown filter: ' + filter.name)
         filtered = filter.apply(filtered, filter.args)
     })
     return filtered
@@ -10780,8 +10788,9 @@ Directive.prototype.applyFilters = function (value) {
 module.exports = {
 
     // make sure the directive and value is valid
-    parse: function (attr, prefix) {
+    parse: function (attr) {
 
+        var prefix = config.prefix
         if (attr.name.indexOf(prefix) === -1) return null
 
         var noprefix = attr.name.slice(prefix.length + 1),
@@ -10801,7 +10810,10 @@ module.exports = {
             : null
     }
 }
-},{"./directives":40,"./filters":41}],40:[function(require,module,exports){
+},{"./config":39,"./directives":41,"./filters":42}],41:[function(require,module,exports){
+var config = require('./config'),
+    watchArray = require('./watchArray')
+
 module.exports = {
 
     text: function (value) {
@@ -10841,21 +10853,34 @@ module.exports = {
     },
 
     each: {
-        update: function () {
-            // augmentArray(collection, this)
-            // console.log('collection updated')
+        update: function (collection) {
+            watchArray(collection, this.mutate.bind(this))
+            // for each in array
+            //   - create a Seed element using the el's outerHTML and raw data object
+            //   - replace the raw object with new Seed's scope object
+        },
+        mutate: function (mutation) {
+            console.log(mutation)
+            console.log(this)
         }
-        // mutate: function (mutation) {
-
-        // }
     }
 
 }
 
-    // function augmentArray (collection, directive) {
+var push = [].push,
+    slice = [].slice
 
-    // }
-},{}],41:[function(require,module,exports){
+function augmentArray(collection, directive) {
+    collection.push = function (element) {
+        push.call(this, arguments)
+        directive.mutate({
+            event: 'push',
+            elements: slice.call(arguments),
+            collection: collection
+        })
+    }
+}
+},{"./config":39,"./watchArray":45}],42:[function(require,module,exports){
 module.exports = {
 
     capitalize: function (value) {
@@ -10877,50 +10902,94 @@ module.exports = {
     }
 
 }
-},{}],42:[function(require,module,exports){
-var prefix = 'sd',
+},{}],43:[function(require,module,exports){
+var config = require('./config'),
+    Seed = require('./seed'),
+    directives = require('./directives'),
+    filters = require('./filters')
+
+function buildSelector() {
+    config.selector = Object.keys(directives).map(function (directive) {
+        return '[' + config.prefix + '-' + directive + ']'
+    }).join()
+}
+
+Seed.config = config
+buildSelector()
+
+Seed.extend = function (opts) {
+    var Spore = function () {
+        Seed.apply(this, arguments)
+        for (var prop in this.extensions) {
+            var ext = this.extensions[prop]
+            this.scope[prop] = (typeof ext === 'function')
+                ? ext.bind(this)
+                : ext
+        }
+    }
+    Spore.prototype = Object.create(Seed.prototype)
+    Spore.prototype.extensions = {}
+    for (var prop in opts) {
+        Spore.prototype.extensions[prop] = opts[prop]
+    }
+    return Spore
+}
+
+Seed.directive = function (name, fn) {
+    directives[name] = fn
+    buildSelector()
+}
+
+Seed.filter = function (name, fn) {
+    filters[name] = fn
+}
+
+module.exports = Seed
+},{"./config":39,"./directives":41,"./filters":42,"./seed":44}],44:[function(require,module,exports){
+var config = require('./config'),
     Directive = require('./directive'),
     Directives = require('./directives'),
-    selector = Object.keys(Directives).map(function (d) {
-        return '[' + prefix + '-' + d + ']'
-    }).join()
+    Filters = require('./filters')
 
-function Seed(opts) {    
-    var self = this,
-        root = this.el = document.getElementById(opts.id),
-        els = root.querySelectorAll(selector)
+function Seed(el, data) {
 
-    self.bindings = {}
-    self.scope = {}
+    if (typeof el === 'string') {
+        el = document.querySelector(el)
+    }
 
-        // process nodes for directives
-        ;[].forEach.call(els, this.compileNode.bind(this))
-    this.compileNode(root)
+    this.el = el
+    this._bindings = {}
+    this.scope = {}
+
+    // process nodes for directives
+    var els = el.querySelectorAll(config.selector)
+        ;[].forEach.call(els, this._compileNode.bind(this))
+    this._compileNode(el)
 
     // initialize all variables by invoking setters
-    for (var key in self.bindings) {
-        self.scope[key] = opts.scope[key]
+    for (var key in this._bindings) {
+        this.scope[key] = data[key]
     }
 
 }
 
-Seed.prototype.compileNode = function (node) {
+Seed.prototype._compileNode = function (node) {
     var self = this
     cloneAttributes(node.attributes).forEach(function (attr) {
-        var directive = Directive.parse(attr, prefix)
+        var directive = Directive.parse(attr)
         if (directive) {
-            self.bind(node, directive)
+            self._bind(node, directive)
         }
     })
 }
 
-Seed.prototype.bind = function (node, directive) {
+Seed.prototype._bind = function (node, directive) {
 
     directive.el = node
     node.removeAttribute(directive.attr.name)
 
     var key = directive.key,
-        binding = this.bindings[key] || this.createBinding(key)
+        binding = this._bindings[key] || this._createBinding(key)
 
     // add directive to this binding
     binding.directives.push(directive)
@@ -10932,14 +11001,14 @@ Seed.prototype.bind = function (node, directive) {
 
 }
 
-Seed.prototype.createBinding = function (key) {
+Seed.prototype._createBinding = function (key) {
 
     var binding = {
         value: undefined,
         directives: []
     }
 
-    this.bindings[key] = binding
+    this._bindings[key] = binding
 
     // bind accessor triggers to scope
     Object.defineProperty(this.scope, key, {
@@ -10987,18 +11056,34 @@ function cloneAttributes(attributes) {
     })
 }
 
-module.exports = {
-    create: function (opts) {
-        return new Seed(opts)
-    },
-    directive: function () {
-        // create dir
-    },
-    filter: function () {
-        // create filter
-    }
+module.exports = Seed
+},{"./config":39,"./directive":40,"./directives":41,"./filters":42}],45:[function(require,module,exports){
+var proto = Array.prototype,
+    slice = proto.slice,
+    mutatorMethods = [
+        'pop',
+        'push',
+        'reverse',
+        'shift',
+        'unshift',
+        'splice',
+        'sort'
+    ]
+
+module.exports = function (arr, callback) {
+    mutatorMethods.forEach(function (method) {
+        arr[method] = function () {
+            proto[method].apply(this, arguments)
+            callback({
+                event: method,
+                args: slice.call(arguments),
+                array: arr
+            })
+        }
+    })
+
 }
-},{"./directive":39,"./directives":40}],43:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 var Seed = require('../src/main.js')
 var expect = require('chai').expect
 
@@ -11020,28 +11105,60 @@ var expect = require('chai').expect
 //     }
 // })
 
-var app = Seed.create({
-    id: 'test',
-    // template
-    scope: {
-        'msg.wow': 'wow',
-        hello: 'hello',
-        changeMessage: function () {
-            app.scope['msg.wow'] = 'hola'
-        },
-        remove: function () {
-            app.destroy()
-        },
-        todos: [
-            {
-                title: 'make this shit work',
-                done: false
-            },
-            {
-                title: 'make this shit kinda work',
-                done: true
-            }
-        ]
+// var app = Seed.create({
+//     id: 'test',
+//     // template
+//     scope: {
+//         'msg.wow': 'wow',
+//         hello: 'helloL',
+//         changeMessage: function () {
+//             app.scope['msg.wow'] = 'hola'
+//         },
+//         remove: function () {
+//             app.destroy()
+//         },
+//         todos: [
+//             {
+//                 title: 'make this shit work',
+//                 done: false
+//             },
+//             {
+//                 title: 'make this shit kinda work',
+//                 done: true
+//             }
+//         ]
+//     }
+// })
+
+
+Seed.filter('money', function (value) {
+    return '$' + value.toFixed(2)
+})
+
+// define a seed
+var Todos = Seed.extend({
+    id: 0,
+    changeMessage: function () {
+        this.scope['msg.wow'] = 'hola'
+    },
+    remove: function () {
+        this.destroy()
     }
 })
-},{"../src/main.js":42,"chai":2}]},{},[43]);
+
+var todos = new Todos('#test', {
+    total     : 1000,
+    'msg.wow' : 'wow',
+    hello     : 'hello',
+    todos     : [
+        {
+            title: 'make this shit work',
+            done: false
+        },
+        {
+            title: 'make this shit kinda work',
+            done: true
+        }
+    ]
+})
+},{"../src/main.js":43,"chai":2}]},{},[46]);
