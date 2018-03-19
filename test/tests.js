@@ -30,6 +30,16 @@ var app = Seed.create({
         },
         remove: function () {
             app.destroy()
-        }
+        },
+        todos: [
+            {
+                title: 'make this shit work',
+                done: false
+            },
+            {
+                title: 'make this shit kinda work',
+                done: true
+            }
+        ]
     }
 })
