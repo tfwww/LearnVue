@@ -37,7 +37,7 @@ function Directive(def, attr, arg, key) {
     }
 }
 
-Directive.prototype.update = function (value) {
+Directive.prototype.update = function (value) {    
     // apply filters
     if (this.filters) {
         value = this.applyFilters(value)

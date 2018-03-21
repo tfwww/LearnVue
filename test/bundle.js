@@ -10768,7 +10768,7 @@ function Directive(def, attr, arg, key) {
     }
 }
 
-Directive.prototype.update = function (value) {
+Directive.prototype.update = function (value) {    
     // apply filters
     if (this.filters) {
         value = this.applyFilters(value)
@@ -10962,6 +10962,7 @@ function Seed(el, data) {
     this.scope = {}
 
     // process nodes for directives
+    log('config sel', config.selector)
     var els = el.querySelectorAll(config.selector)
         ;[].forEach.call(els, this._compileNode.bind(this))
     this._compileNode(el)
@@ -11018,6 +11019,7 @@ Seed.prototype._createBinding = function (key) {
         set: function (value) {
             binding.value = value
             binding.directives.forEach(function (directive) {
+                log('dire', directive)
                 directive.update(value)
             })
         }
